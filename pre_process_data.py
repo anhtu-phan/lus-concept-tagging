@@ -11,25 +11,28 @@ def remove_stop_words(input_utter_file, input_conll_file, output_utter_file, out
     with open(input_conll_file, 'r') as f:
         with open(output_conll_file, 'w') as f_conll_out:
             with open(output_utter_file, 'w') as f_utter_out:
-                removed_words = {}
+                removed_words_index = []
+                word_pos = 0
                 for line in f:
                     line = line.strip()
                     if len(line.strip()) > 0:
                         line = line.strip().split("\t")
                         word = line[0]
-                        if word not in stop_words:
-                            f_conll_out.write("\t".join(line)+"\n")
+                        tag = line[1].strip()
+                        if word in stop_words and tag == "O":
+                            removed_words_index.append(word_pos)
                         else:
-                            if word not in removed_words:
-                                removed_words[word] = 1
+                            f_conll_out.write("\t".join(line) + "\n")
+                        word_pos += 1
                     else:
                         f_conll_out.write("\n")
                         removed_utter_sent = []
-                        for word in utter_sentences[it_conl_sen]:
-                            if word not in removed_words:
+                        for i, word in enumerate(utter_sentences[it_conl_sen]):
+                            if i not in removed_words_index:
                                 removed_utter_sent.append(word)
                         f_utter_out.write(" ".join(removed_utter_sent)+"\n")
-                        removed_words = {}
+                        removed_words_index = []
+                        word_pos = 0
                         it_conl_sen += 1
 
 

@@ -64,7 +64,7 @@ hyps = read_fst4conll('w2t_t.t1.out')
 results = evaluate(refs, hyps)
 
 pd_tbl = pd.DataFrame().from_dict(results, orient='index').round(decimals=3)
-pd_tbl.to_csv("./result/no_stop_word_base_line.csv")
+pd_tbl.to_csv("./result/no_tagO_stop_word_base_line.csv")
 
 os.system("bash ./bin/run_mle.bash")
 make_w2t_mle('trn.w2t.probs', out='trn.w2t_mle.txt')
@@ -78,4 +78,4 @@ hyps = read_fst4conll('w2t_t.t1.mle_full.out')
 results = evaluate(refs, hyps)
 
 pd_tbl = pd.DataFrame().from_dict(results, orient='index').round(decimals=3)
-pd_tbl.to_csv("./result/no_stop_word_mle.csv")
+pd_tbl.to_csv("./result/no_tagO_stop_word_mle.csv")
