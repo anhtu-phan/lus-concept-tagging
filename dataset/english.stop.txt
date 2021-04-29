@@ -569,3 +569,9 @@ yourself
 yourselves
 z
 zero
+!
+'d
+'m
+'s
+'t
+-

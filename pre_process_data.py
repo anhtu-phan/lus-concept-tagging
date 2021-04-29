@@ -20,6 +20,7 @@ def remove_stop_words(input_utter_file, input_conll_file, output_utter_file, out
                         word = line[0]
                         tag = line[1].strip()
                         if word in stop_words and tag == "O":
+                        # if word in stop_words:
                             removed_words_index.append(word_pos)
                         else:
                             f_conll_out.write("\t".join(line) + "\n")
