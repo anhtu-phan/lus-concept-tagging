@@ -5,6 +5,14 @@ def read_corpus(corpus_file):
     return [line.strip().split() for line in open(corpus_file, 'r')]
 
 
+def get_lexicon(sents):
+    lexicon = set()
+    for sent in sents:
+        for word in sent:
+            lexicon.add(word)
+    return list(lexicon)
+
+
 def read_corpus_conll(corpus_file, fs="\t"):
     featn = None
     sents = []
