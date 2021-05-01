@@ -67,10 +67,21 @@ class DataAnalysis:
 
 d = DataAnalysis("./dataset/NL2SparQL4NLU.train_no_stop_word.utterances.txt", "./dataset/NL2SparQL4NLU.train_no_stop_word.conll.txt")
 d2 = DataAnalysis("./dataset/NL2SparQL4NLU.train.utterances.txt", "./dataset/NL2SparQL4NLU.train.conll.txt")
-
+# print(d2.count_lexicon())
 print(d2.nbest(d2.get_vocab(), 10, rev=True))
 print(d.nbest(d.get_vocab(), 10, rev=True))
-print(d2.nbest(d2.get_tag_vocab(), 10, rev=True))
-print(d.nbest(d.get_tag_vocab(), 10, rev=True))
-print(d2.nbest(d2.get_tag_vocab(iob=False), 10, rev=True))
+# print(d2.nbest(d2.get_tag_vocab(), 10, rev=True))
+# print(d.nbest(d.get_tag_vocab(), 10, rev=True))
+print(d2.nbest(d2.get_tag_vocab(iob=False), -1, rev=True))
 print(d.nbest(d.get_tag_vocab(iob=False), 10, rev=True))
+
+
+t = DataAnalysis("./dataset/NL2SparQL4NLU.test_no_stop_word.utterances.txt", "./dataset/NL2SparQL4NLU.test_no_stop_word.conll.txt")
+t2 = DataAnalysis("./dataset/NL2SparQL4NLU.test.utterances.txt", "./dataset/NL2SparQL4NLU.test.conll.txt")
+print(t2.count_lexicon())
+print(t2.nbest(t2.get_vocab(), 10, rev=True))
+print(t.nbest(t.get_vocab(), 10, rev=True))
+# print(t2.nbest(t2.get_tag_vocab(), 10, rev=True))
+# print(t.nbest(t.get_tag_vocab(), 10, rev=True))
+print(t2.nbest(t2.get_tag_vocab(iob=False), -1, rev=True))
+print(t.nbest(t.get_tag_vocab(iob=False), 10, rev=True))

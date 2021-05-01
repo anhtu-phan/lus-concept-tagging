@@ -1,5 +1,6 @@
 import re
 
+
 def read_corpus(corpus_file):
     return [line.strip().split() for line in open(corpus_file, 'r')]
 
@@ -97,6 +98,30 @@ def read_fst4conll(fst_file, fs="\t", oov='<UNK>', otag='O', sep='+', split=Fals
     return sents
 
 
+# TODO: check why change ngram_words
+# def make_w2t_mle(probs, out='w2t_mle.tmp'):
+#     special = {'<epsilon>', '<s>', '</s>'}
+#     oov = '<UNK>'  # unknown symbol
+#     state = '0'  # wfst specification state
+#     fs = " "  # wfst specification column separator
+#     otag = 'O'
+#     mcn = 3  # minimum column number
+#
+#     lines = [line.strip().split("\t") for line in open(probs, 'r')]
+#
+#     with open(out, 'w') as f:
+#         for line in lines:
+#             ngram = line[0]
+#             ngram_words = ngram.split()  # by space
+#             if len(ngram_words) == 2:
+#                 if set(ngram_words).isdisjoint(set(special)):
+#                     if ngram_words[1] in [otag, oov]:
+#                         f.write(fs.join([state, state] + ngram_words + [line[1]]) + "\n")
+#                     elif ngram_words[1].startswith("B-") or ngram_words[1].startswith("I-"):
+#                         f.write(fs.join([state, state] + line) + "\n")
+#         f.write(state + "\n")
+
+
 def make_w2t_mle(probs, out='w2t_mle.tmp'):
     special = {'<epsilon>', '<s>', '</s>'}
     oov = '<UNK>'  # unknown symbol
@@ -117,4 +142,18 @@ def make_w2t_mle(probs, out='w2t_mle.tmp'):
                         f.write(fs.join([state, state] + ngram_words + [line[1]]) + "\n")
                     elif ngram_words[0].startswith("B-") or ngram_words[0].startswith("I-"):
                         f.write(fs.join([state, state] + line) + "\n")
+        f.write(state + "\n")
+
+
+def make_w2t_wt(isyms, sep='+', out='w2wt.tmp'):
+    special = {'<epsilon>', '<s>', '</s>'}
+    oov = '<UNK>'  # unknown symbol
+    state = '0'  # wfst specification state
+    fs = " "  # wfst specification column separator
+
+    ist = sorted(list(set([line.strip().split("\t")[0] for line in open(isyms, 'r')]) - special))
+
+    with open(out, 'w') as f:
+        for e in ist:
+            f.write(fs.join([state, state, e.split('+')[0], e]) + "\n")
         f.write(state + "\n")
