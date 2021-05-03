@@ -137,7 +137,7 @@ class WfsmMle:
         self.lm_train_unigram(self.NGRAM_ORDER, self.SMOOTH_METHOD, self.BACK_OFF)
         self.mle_create_training_data()
         self.mle_training(self.NGRAM_ORDER, self.SMOOTH_METHOD, self.BACK_OFF)
-        self.mle_evaluate(f'mle_{self.SMOOTH_METHOD}_{self.BACK_OFF}_{self.NGRAM_ORDER}{self.DATA_TYPE}_no_cut_off')
+        self.mle_evaluate(f'mle_{self.SMOOTH_METHOD}_{self.BACK_OFF}_{self.NGRAM_ORDER}{self.DATA_TYPE}')
 
 
 if __name__ == '__main__':
