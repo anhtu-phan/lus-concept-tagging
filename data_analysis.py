@@ -45,14 +45,17 @@ class DataAnalysis:
                 line = line.strip().split(fs)
                 if len(line) == 2:
                     tag = line[1].strip()
-                    if not iob:
-                        tag = parse_iob(tag)[1]
-                        if tag is None:
-                            tag = line[1].strip()
-                    if tag in vocab:
-                        vocab[tag] += 1
-                    else:
-                        vocab[tag] = 1
+                    if tag != 'O':
+                        if not iob:
+                            if tag.startswith("B-"):
+                                tag = parse_iob(tag)[1]
+                            else:
+                                tag = None
+                    if tag is not None:
+                        if tag in vocab:
+                            vocab[tag] += 1
+                        else:
+                            vocab[tag] = 1
         return vocab
 
     def nbest(self, d, n=1, rev=True):
@@ -65,25 +68,44 @@ class DataAnalysis:
         return dict(sorted(d.items(), key=lambda item: item[1], reverse=rev)[:n])
 
 
-d = DataAnalysis("./dataset/NL2SparQL4NLU.train_norm_all_words_no_stop_word.utterances.txt", "./dataset/NL2SparQL4NLU.train_norm_all_words_no_stop_word.conll.txt")
+d = DataAnalysis("./dataset/NL2SparQL4NLU.train_norm_no_stop_word.utterances.txt", "./dataset/NL2SparQL4NLU.train_norm_no_stop_word.conll.txt")
 d2 = DataAnalysis("./dataset/NL2SparQL4NLU.train.utterances.txt", "./dataset/NL2SparQL4NLU.train.conll.txt")
-print(d2.count_lexicon())
-print(d2.nbest(d2.get_vocab(), 10, rev=True))
-print(d.nbest(d.get_vocab(), 10, rev=True))
-print(d2.nbest(d2.get_tag_vocab(), 10, rev=True))
-print(d.nbest(d.get_tag_vocab(), 10, rev=True))
+# print(d.count_word())
+# print(d2.count_word())
+# print(d2.count_lexicon())
+# print(d.count_lexicon())
+# print(d2.nbest(d2.get_vocab(), 10, rev=True))
+# print(d.nbest(d.get_vocab(), 10, rev=True))
+# print(d2.nbest(d2.get_tag_vocab(), 10, rev=True))
+# print(d.nbest(d.get_tag_vocab(), 10, rev=True))
 tags = d2.get_tag_vocab(iob=False)
 print(d2.nbest(tags, len(tags), rev=True))
-print(d.nbest(d.get_tag_vocab(iob=False), 10, rev=True))
+tags = d.get_tag_vocab(iob=False)
+train = d.nbest(tags, len(tags), rev=True)
 
 
-# t = DataAnalysis("./dataset/NL2SparQL4NLU.test_no_stop_word.utterances.txt", "./dataset/NL2SparQL4NLU.test_no_stop_word.conll.txt")
-# t2 = DataAnalysis("./dataset/NL2SparQL4NLU.test.utterances.txt", "./dataset/NL2SparQL4NLU.test.conll.txt")
+t = DataAnalysis("./dataset/NL2SparQL4NLU.test_norm_no_stop_word.utterances.txt", "./dataset/NL2SparQL4NLU.test_norm_no_stop_word.conll.txt")
+t2 = DataAnalysis("./dataset/NL2SparQL4NLU.test.utterances.txt", "./dataset/NL2SparQL4NLU.test.conll.txt")
 # print(t2.count_lexicon())
+# print(t.count_lexicon())
+# print(t.count_word())
+# print(t2.count_word())
 # print(t2.nbest(t2.get_vocab(), 10, rev=True))
 # print(t.nbest(t.get_vocab(), 10, rev=True))
 # # print(t2.nbest(t2.get_tag_vocab(), 10, rev=True))
 # # print(t.nbest(t.get_tag_vocab(), 10, rev=True))
-# tags = t2.get_tag_vocab(iob=False)
-# print(t2.nbest(tags, len(tags), rev=True))
-# print(t.nbest(t.get_tag_vocab(iob=False), 10, rev=True))
+tags = t2.get_tag_vocab(iob=False)
+print(t2.nbest(tags, len(tags), rev=True))
+t.get_tag_vocab(iob=False)
+test = t.nbest(tags, len(tags), rev=True)
+
+result = {}
+for k, v in train.items():
+    if k in test:
+        result[k] = [v, test[k]]
+    else:
+        result[k] = [v, 0]
+
+import pandas as pd
+pd = pd.DataFrame(result).T
+pd.to_csv("./result/data_analysis.csv", sep='&')

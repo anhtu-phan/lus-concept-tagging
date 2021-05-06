@@ -12,7 +12,7 @@ os.system(f'cp ./dataset/NL2SparQL4NLU.test{DATA_TYPE}.conll.txt tst.conll')
 
 trn = read_corpus_conll('trn.conll')
 wt_sents = [["+".join(w) for w in s] for s in trn]
-wt_osyms = cutoff(wt_sents, tf_min=0)
+wt_osyms = cutoff(wt_sents)
 wt_isyms = [w.split('+')[0] for w in wt_osyms]
 
 with open('trn.wt.txt', 'w') as f:
@@ -31,17 +31,19 @@ os.system("ngramsymbols isyms.wt.lst.txt isyms.wt.txt")
 os.system("farcompilestrings --symbols=osyms.wt.txt --keep_symbols --unknown_symbol='<UNK>' trn.wt.txt trn.wt.far")
 os.system("ngramcount --order=2 trn.wt.far trn.wt.cnt")
 os.system("ngrammake trn.wt.cnt wt2.lm")
-os.system("ngramprint --symbols=msyms.t.txt --negativelogs wt2.lm w2t.probs")
+os.system("ngraminfo wt2.lm")
+os.system("ngramprint --symbols=osyms.wt.txt --negativelogs wt2.lm w2t.probs")
 
 make_w2t_wt('osyms.wt.txt', out='w2wt_wt.txt')
 
 os.system("fstcompile --isymbols=isyms.wt.txt --osymbols=osyms.wt.txt --keep_isymbols --keep_osymbols w2wt_wt.txt w2wt_wt.bin")
+os.system("fstinfo w2wt_wt.bin | head -n 8")
 os.system("farcompilestrings --symbols=isyms.wt.txt --keep_symbols --unknown_symbol='<UNK>' tst.txt tst.wt.far")
 os.system("mkdir -p wdir_wt")
 os.system('farextract --filename_prefix="wdir_wt/" tst.wt.far')
-# os.system("cp wdir_wt/tst.txt-0001 sent.wt.fsa")
-# os.system("fstprint sent.wt.fsa")
-# os.system("fstcompose sent.wt.fsa w2wt_wt.bin | fstcompose - wt2.lm | fstshortestpath | fstrmepsilon | fsttopsort | fstprint")
+os.system("cp wdir_wt/tst.txt-0001 sent.wt.fsa")
+os.system("fstprint sent.wt.fsa")
+os.system("fstcompose sent.wt.fsa w2wt_wt.bin | fstcompose - wt2.lm | fstshortestpath | fstrmepsilon | fsttopsort | fstprint")
 
 os.system('bash ./bin/evaluate_wt.bash')
 

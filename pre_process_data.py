@@ -1,8 +1,6 @@
-import re
-from nltk.stem import WordNetLemmatizer, SnowballStemmer
-import numpy as np
 import nltk
-from gensim.utils import simple_preprocess
+import numpy as np
+from nltk.stem import WordNetLemmatizer, SnowballStemmer
 
 np.random.seed(2018)
 nltk.download("wordnet")
@@ -91,23 +89,3 @@ def norm_data_input(input_file, output_file, file_type="utter"):
                     f_out.write(" ".join(words) + "\n")
                 else:
                     f_out.write("\t".join(words) + "\n")
-
-
-norm_data_input("dataset/NL2SparQL4NLU.train_no_stop_word.utterances.txt",
-                "dataset/NL2SparQL4NLU.train_norm_all_words_no_stop_word.utterances.txt")
-norm_data_input("dataset/NL2SparQL4NLU.test_no_stop_word.utterances.txt",
-                "dataset/NL2SparQL4NLU.test_norm_all_words_no_stop_word.utterances.txt")
-norm_data_input("dataset/NL2SparQL4NLU.train_no_stop_word.conll.txt",
-                "dataset/NL2SparQL4NLU.train_norm_all_words_no_stop_word.conll.txt",
-                file_type='conll')
-norm_data_input("dataset/NL2SparQL4NLU.test_no_stop_word.conll.txt",
-                "dataset/NL2SparQL4NLU.test_norm_all_words_no_stop_word.conll.txt",
-                file_type='conll')
-# remove_stop_words("dataset/NL2SparQL4NLU.train_norm_all_words.utterances.txt",
-#                   "dataset/NL2SparQL4NLU.train_norm_all_words.conll.txt",
-#                   "dataset/NL2SparQL4NLU.train_norm_all_words_no_stop_word.utterances.txt",
-#                   "dataset/NL2SparQL4NLU.train_norm_all_words_no_stop_word.conll.txt")
-# remove_stop_words("dataset/NL2SparQL4NLU.test_norm_all_words.utterances.txt",
-#                   "dataset/NL2SparQL4NLU.test_norm_all_words.conll.txt",
-#                   "dataset/NL2SparQL4NLU.test_norm_all_words_no_stop_word.utterances.txt",
-#                   "dataset/NL2SparQL4NLU.test_norm_all_words_no_stop_word.conll.txt", training=False)

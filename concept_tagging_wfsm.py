@@ -1,17 +1,22 @@
-from conll import evaluate
-import pandas as pd
-import os
-from utils import *
 import argparse
+import os
+
+import pandas as pd
+
+from conll import evaluate
+from pre_process_data import *
+from utils import *
 
 
 class WfsmMle:
-    def __init__(self, alg_type="mle", data_type="", ngram_order=1, back_off='false', smooth_method='witten_bell'):
+    def __init__(self, alg_type="mle", data_type="", ngram_order_lm=1, ngram_order_wt=2, back_off='false', smooth_method_lm='witten_bell', smooth_method_wt='witten_bell'):
         self.ALG_TYPE = alg_type
         self.DATA_TYPE = data_type
-        self.NGRAM_ORDER = ngram_order
+        self.NGRAM_ORDER_LM = ngram_order_lm
+        self.NGRAM_ORDER_WT = ngram_order_wt
         self.BACK_OFF = back_off
-        self.SMOOTH_METHOD = smooth_method
+        self.SMOOTH_METHOD_LM = smooth_method_lm
+        self.SMOOTH_METHOD_WT = smooth_method_wt
 
     def prepare_input(self, data_type):
         os.system(f'cp ./dataset/NL2SparQL4NLU.train{data_type}.utterances.txt trn.txt')
@@ -69,10 +74,10 @@ class WfsmMle:
             os.system("ngramsymbols osyms.u.lst.txt osyms.t.txt")
         os.system("farcompilestrings --symbols=osyms.t.txt --keep_symbols --unknown_symbol='<UNK>' trn.t.txt trn.t.far")
 
-    def lm_train_unigram(self, ngram_order=3, smooth_method='witten_bell', back_off='false'):
+    def lm_train_unigram(self, ngram_order=1, smooth_method='witten_bell', back_off='false'):
         os.system(f"ngramcount --order={ngram_order} trn.t.far trn.t1.cnt")
         os.system(f"ngrammake --method={smooth_method} --backoff={back_off} trn.t1.cnt t1.lm")
-        # os.system("ngramprint --symbols=osyms.t.txt --negativelogs t1.lm t1.probs")
+        os.system("ngramprint --symbols=osyms.t.txt --negativelogs t1.lm t1.probs")
         # make_w2t_mle('t1.probs', out='t1_mle.txt')
         # os.system("fstcompile --isymbols=osyms.t.txt --osymbols=osyms.t.txt --keep_isymbols --keep_osymbols t1_mle.txt t1_mle.bin")
         # os.system("fstinvert t1_mle.bin t1_mle.inv.bin")
@@ -84,7 +89,7 @@ class WfsmMle:
         os.system(
             "farcompilestrings --symbols=msyms.t.txt --keep_symbols --unknown_symbol='<UNK>' trn.w2t.txt trn.w2t.far")
 
-    def mle_training(self, ngram_order=3, smooth_method='witten_bell', back_off='false'):
+    def mle_training(self, ngram_order=2, smooth_method='witten_bell', back_off='false'):
         os.system(f"ngramcount --order={ngram_order} trn.w2t.far trn.w2t.cnt")
         os.system(f"ngrammake --method={smooth_method} --backoff={back_off} trn.w2t.cnt trn.w2t.lm")
         os.system("ngramprint --symbols=msyms.t.txt --negativelogs trn.w2t.lm trn.w2t.probs")
@@ -102,52 +107,56 @@ class WfsmMle:
 
         results = evaluate(refs, hyps)
 
-        pd_tbl = pd.DataFrame().from_dict(results, orient='index').round(decimals=3)
+        pd_tbl = pd.DataFrame().from_dict(results, orient='index').round(decimals=3).sort_values("s", ascending=False)
         pd_tbl.to_csv(
             f"./result/{file_name}.csv", sep='&')
 
-    def base_line_evaluate(self):
-        os.system("bash ./bin/evaluate_base_line.bash")
-        refs = read_corpus_conll('tst.conll')
-        hyps = read_fst4conll('w2t_u.out')
-
-        results = evaluate(refs, hyps)
-
-        pd_tbl = pd.DataFrame().from_dict(results, orient='index').round(decimals=3)
-        pd_tbl.to_csv(
-            f"./result/base_line_{self.SMOOTH_METHOD}_{self.BACK_OFF}_{self.NGRAM_ORDER}{self.DATA_TYPE}.csv", sep='&')
-
-    def lm_random_evaluate(self):
-        os.system("bash ./bin/evaluate_lm_random.bash")
-        refs = read_corpus_conll('tst.conll')
-        hyps = read_fst4conll('w2t_u_lm.out')
-
-        results = evaluate(refs, hyps)
-
-        pd_tbl = pd.DataFrame().from_dict(results, orient='index').round(decimals=3)
-        pd_tbl.to_csv(
-            f"./result/lm_random_{self.SMOOTH_METHOD}_{self.BACK_OFF}_{self.NGRAM_ORDER}{self.DATA_TYPE}.csv", sep='&')
+    def pre_process_data(self):
+        if self.DATA_TYPE != '':
+            remove_stop_words("dataset/NL2SparQL4NLU.train.utterances.txt",
+                              "dataset/NL2SparQL4NLU.train.conll.txt",
+                              "dataset/NL2SparQL4NLU.train_no_stop_word.utterances.txt",
+                              "dataset/NL2SparQL4NLU.train_no_stop_word.conll.txt")
+            remove_stop_words("dataset/NL2SparQL4NLU.test.utterances.txt",
+                              "dataset/NL2SparQL4NLU.test.conll.txt",
+                              "dataset/NL2SparQL4NLU.test_no_stop_word.utterances.txt",
+                              "dataset/NL2SparQL4NLU.test_no_stop_word.conll.txt", training=False)
+            if self.DATA_TYPE == '_norm_no_stop_word':
+                norm_data_input("dataset/NL2SparQL4NLU.train_no_stop_word.utterances.txt",
+                                "dataset/NL2SparQL4NLU.train_norm_no_stop_word.utterances.txt")
+                norm_data_input("dataset/NL2SparQL4NLU.test_no_stop_word.utterances.txt",
+                                "dataset/NL2SparQL4NLU.test_norm_no_stop_word.utterances.txt")
+                norm_data_input("dataset/NL2SparQL4NLU.train_no_stop_word.conll.txt",
+                                "dataset/NL2SparQL4NLU.train_norm_no_stop_word.conll.txt",
+                                file_type='conll')
+                norm_data_input("dataset/NL2SparQL4NLU.test_no_stop_word.conll.txt",
+                                "dataset/NL2SparQL4NLU.test_norm_no_stop_word.conll.txt",
+                                file_type='conll')
 
     def run(self):
-        print(self.ALG_TYPE, self.DATA_TYPE, self.NGRAM_ORDER, self.SMOOTH_METHOD)
+        if not os.path.exists("./result"):
+            os.system("mkdir result")
+        self.pre_process_data()
         self.prepare_input(self.DATA_TYPE)
         self.generate_output()
         self.create_test_set()
         self.lm_create_training_data(self.DATA_TYPE)
-        self.lm_train_unigram(self.NGRAM_ORDER, self.SMOOTH_METHOD, self.BACK_OFF)
+        self.lm_train_unigram(self.NGRAM_ORDER_LM, self.SMOOTH_METHOD_LM, self.BACK_OFF)
         self.mle_create_training_data()
-        self.mle_training(self.NGRAM_ORDER, self.SMOOTH_METHOD, self.BACK_OFF)
-        self.mle_evaluate(f'mle_{self.SMOOTH_METHOD}_{self.BACK_OFF}_{self.NGRAM_ORDER}{self.DATA_TYPE}')
+        self.mle_training(self.NGRAM_ORDER_WT, self.SMOOTH_METHOD_WT, self.BACK_OFF)
+        self.mle_evaluate(f'{self.ALG_TYPE}_{self.NGRAM_ORDER_LM}_{self.NGRAM_ORDER_WT}{self.DATA_TYPE}_{self.SMOOTH_METHOD_LM}_{self.SMOOTH_METHOD_WT}_{self.BACK_OFF}')
 
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument("--alg_type", nargs='?', default='mle')
     parser.add_argument("--data_type", nargs='?', default='')
-    parser.add_argument("--ngram_order", nargs='?', type=int, default=1)
+    parser.add_argument("--ngram_order_lm", nargs='?', type=int, default=1)
+    parser.add_argument("--ngram_order_wt", nargs='?', type=int, default=2)
     parser.add_argument("--back_off", nargs='?', default='false')
-    parser.add_argument("--smooth_method", nargs='?', default='witten_bell')
+    parser.add_argument("--smooth_method_lm", nargs='?', default='witten_bell')
+    parser.add_argument("--smooth_method_wt", nargs='?', default='witten_bell')
 
     args = parser.parse_args()
-    model = WfsmMle(args.alg_type, args.data_type, args.ngram_order, args.back_off, args.smooth_method)
+    model = WfsmMle(args.alg_type, args.data_type, args.ngram_order_lm, args.ngram_order_wt, args.back_off, args.smooth_method_lm, args.smooth_method_wt)
     model.run()
