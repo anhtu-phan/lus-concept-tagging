@@ -53,4 +53,4 @@ hyps = read_fst4conll('w2wt_wt.wt2.out', split=True)
 results = evaluate(refs, hyps)
 
 pd_tbl = pd.DataFrame().from_dict(results, orient='index').round(decimals=3)
-pd_tbl.to_csv(f"./result/joint_dist_model.csv")
+pd_tbl.to_csv(f"./result/joint_dist_model_norm_no_stop_word.csv")
