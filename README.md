@@ -1,4 +1,5 @@
 # lus-concept-tagging
+Concept Tagging (entity extraction) is one of common tasks in Language Understanding. This project will try to segment the input which is a sentence talk about movies into constituents and label them using IOB-schemes. There are several approach to solve concept tagging problem. This project will try to implement Weighted Finite State Machines.
 
 ## How to run
 ### Requirements
